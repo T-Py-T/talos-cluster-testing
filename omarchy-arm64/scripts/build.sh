@@ -20,9 +20,10 @@ log() {
 clone_at_commit() {
   local repository="$1" commit="$2" destination="$3"
 
-  git clone --filter=blob:none --no-checkout "$repository" "$destination"
-  git -C "$destination" fetch --depth=1 origin "$commit"
-  git -C "$destination" checkout --detach "$commit"
+  git init --quiet "$destination"
+  git -C "$destination" remote add origin "$repository"
+  git -C "$destination" fetch --depth=1 --no-tags origin "$commit"
+  git -C "$destination" checkout --detach FETCH_HEAD
 
   local actual
   actual="$(git -C "$destination" rev-parse HEAD)"
@@ -30,6 +31,10 @@ clone_at_commit() {
     echo "Commit mismatch for $repository: expected $commit, got $actual" >&2
     exit 1
   }
+
+  # Package recipes copy the complete checkout, including .git, from a
+  # read-only bind mount while running as an unprivileged build user.
+  chmod -R a+rX "$destination"
 }
 
 [[ $(uname -m) == aarch64 ]] || {
