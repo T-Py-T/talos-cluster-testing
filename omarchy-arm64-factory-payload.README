@@ -1,0 +1,1 @@
+Payload parts are reconstructed by omarchy-arm64-factory-payload-loader.sh before the ARM64 workflow runs.
