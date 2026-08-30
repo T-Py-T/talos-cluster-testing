@@ -1,0 +1,117 @@
+name: Build Omarchy 4.0.1 ARM64 ISO
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - omarchy-arm64-iso
+    paths:
+      - .github/workflows/build-omarchy-arm64-iso.yml
+      - omarchy-arm64/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: omarchy-arm64-iso-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 330
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      OMARCHY_ARM64_ARTIFACT_DIR: ${{ github.workspace }}/omarchy-arm64/artifacts
+
+    steps:
+      - name: Check out build definition
+        uses: actions/checkout@v4
+
+      - name: Show native runner facts
+        run: |
+          set -euxo pipefail
+          uname -a
+          test "$(uname -m)" = aarch64
+          nproc
+          free -h
+          df -h
+          docker version
+          if [[ -e /dev/kvm ]]; then ls -l /dev/kvm; else echo "KVM unavailable; QEMU will use TCG"; fi
+
+      - name: Free build disk space
+        run: |
+          set -euxo pipefail
+          sudo rm -rf \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL \
+            /usr/local/lib/android \
+            /usr/local/share/boost \
+            /usr/share/dotnet || true
+          docker system prune --all --force || true
+          df -h
+
+      - name: Install verification and VM dependencies
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            curl \
+            git \
+            gnupg \
+            imagemagick \
+            jq \
+            libarchive-tools \
+            openssh-client \
+            python3 \
+            qemu-efi-aarch64 \
+            qemu-system-arm \
+            qemu-utils \
+            socat \
+            squashfs-tools \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            xorriso
+          qemu-system-aarch64 --version
+          find /usr/share -type f \( -name 'AAVMF_CODE*.fd' -o -name 'AAVMF_VARS*.fd' \) -print
+
+      - name: Build pinned Omarchy ISO
+        run: |
+          set -euxo pipefail
+          chmod +x omarchy-arm64/scripts/*.sh
+          omarchy-arm64/scripts/build.sh
+
+      - name: Verify ISO contents
+        run: |
+          set -euxo pipefail
+          source "${RUNNER_TEMP}/omarchy-arm64-build/build.env"
+          omarchy-arm64/scripts/verify-iso.sh "$ISO_PATH" "$ARTIFACT_DIR/verification"
+
+      - name: Install and boot in native ARM QEMU
+        run: |
+          set -euxo pipefail
+          source "${RUNNER_TEMP}/omarchy-arm64-build/build.env"
+          omarchy-arm64/scripts/qemu-install-test.sh \
+            "$BUILDER_DIR" \
+            "$ISO_PATH" \
+            "$ARTIFACT_DIR/qemu-install"
+
+      - name: Final artifact inventory
+        if: always()
+        run: |
+          set -euxo pipefail
+          find omarchy-arm64/artifacts -maxdepth 3 -type f -printf '%s %p\n' | sort -n || true
+          df -h
+
+      - name: Upload ISO and validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omarchy-4.0.1-aarch64-${{ github.run_number }}
+          path: |
+            omarchy-arm64/artifacts/**
+            !omarchy-arm64/artifacts/**/*.qcow2
+            !omarchy-arm64/artifacts/**/*.fd
+            !omarchy-arm64/artifacts/**/id_ed25519*
+          if-no-files-found: warn
+          retention-days: 14
