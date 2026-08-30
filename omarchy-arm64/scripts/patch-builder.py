@@ -46,6 +46,17 @@ def main() -> None:
         "    OMARCHY_MIRROR=edge\n    OMARCHY_ISO_REF=local\n",
         f"    OMARCHY_MIRROR=stable\n    OMARCHY_ISO_REF={args.omarchy_ref}\n",
     )
+    replace_exact(
+        make_script,
+        'docker run "${DOCKER_ARGS[@]}" archlinux/archlinux:latest /$BUILD_SCRIPT\n',
+        '# Build natively on the host architecture. The official Arch Linux\n'
+        '# container publishes only AMD64, so ARM uses Arch Linux ARM.\n'
+        'case "$(uname -m)" in\n'
+        '  aarch64|arm64) BUILD_IMAGE=menci/archlinuxarm:base-devel ;;\n'
+        '  *) BUILD_IMAGE=archlinux/archlinux:latest ;;\n'
+        'esac\n\n'
+        'docker run "${DOCKER_ARGS[@]}" "$BUILD_IMAGE" /$BUILD_SCRIPT\n',
+    )
 
     # The upstream test harness is complete, but its VM launcher is x86_64-only.
     # Keep its real OCR-driven installer flow and replace only host dependencies,
