@@ -1,5 +1,8 @@
 # Security policy
 
+Lab context lives in the [README](README.md). Discoverability index:
+[docs/HIREABILITY.md](docs/HIREABILITY.md). License: [LICENSE](LICENSE).
+
 ## Supported code
 
 The current `main` branch is the only supported version. This repository is a
@@ -39,3 +42,8 @@ third-party images as secure.
 Named volumes retain node state between runs on the operator's machine. The lab
 is intended for local experimentation on hardware or VMs you control, not as a
 deployed multi-tenant service.
+
+## Tip citation
+
+- **Base tip prefix:** `245f8e72` (Ship 269 merge)
+- **Steward resolve:** pending (this PR)

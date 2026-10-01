@@ -22,5 +22,5 @@ request against `main`.
 
 ## Tip citation
 
-- **Main tip prefix:** `64d7992`
-- **Steward resolve:** pending (this PR)
+- **Main tip prefix:** `245f8e72` (Ship 269 merge)
+- **Steward resolve:** pending (Ship 271)
