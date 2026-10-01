@@ -10,6 +10,10 @@ for testing host compatibility. It is a lab scaffold, not a complete
 Kubernetes cluster: machine configuration, control-plane bootstrap, networking,
 and workload deployment are intentionally left to the operator.
 
+Discoverability and hireability pointers:
+[docs/HIREABILITY.md](docs/HIREABILITY.md) (topics, license, cross-links).
+Security reporting: [SECURITY.md](SECURITY.md).
+
 ## Topology
 
 ```text
@@ -76,6 +80,8 @@ docker compose down --volumes
 | Path | Purpose |
 | --- | --- |
 | [`compose.yaml`](compose.yaml) | Two-node Talos container topology and storage mounts |
+| [`docs/HIREABILITY.md`](docs/HIREABILITY.md) | Discoverability topics and document cross-links |
+| [`SECURITY.md`](SECURITY.md) | Vulnerability reporting and supported branch |
 | [`LICENSE`](LICENSE) | License retained from the original lab scaffold |
 
 ## Safety notes
