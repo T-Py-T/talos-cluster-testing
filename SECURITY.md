@@ -1,7 +1,6 @@
 # Security policy
 
-Lab context lives in the [README](README.md). Discoverability index:
-[docs/HIREABILITY.md](docs/HIREABILITY.md). License: [LICENSE](LICENSE).
+Lab context lives in the [README](README.md). License: [LICENSE](LICENSE).
 
 ## Supported code
 
