@@ -41,8 +41,3 @@ third-party images as secure.
 Named volumes retain node state between runs on the operator's machine. The lab
 is intended for local experimentation on hardware or VMs you control, not as a
 deployed multi-tenant service.
-
-## Tip citation
-
-- **Base tip prefix:** `245f8e72` (Ship 269 merge)
-- **Steward resolve:** pending (this PR)
