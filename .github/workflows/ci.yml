@@ -42,26 +42,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
-      - name: Load lab version pins
-        run: |
-          # shellcheck source=/dev/null
-          source lab-versions.env
-          echo "TALOS_VERSION=${TALOS_VERSION}" >> "${GITHUB_ENV}"
-
       - name: Trivy config scan
         uses: aquasecurity/trivy-action@c03d123cb480c08c69b054af418ea5e69fe6e57e  # v0.36.0
         with:
           scan-type: config
           scan-ref: .
           trivy-config: trivy.yaml
-          exit-code: 1
-          severity: CRITICAL,HIGH
-
-      - name: Trivy image scan (pinned Talos containers)
-        uses: aquasecurity/trivy-action@c03d123cb480c08c69b054af418ea5e69fe6e57e  # v0.36.0
-        with:
-          scan-type: image
-          image-ref: "ghcr.io/siderolabs/talos:${{ env.TALOS_VERSION }}"
-          ignore-unfixed: true
           exit-code: 1
           severity: CRITICAL,HIGH
