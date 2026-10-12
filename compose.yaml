@@ -1,15 +1,18 @@
 name: talos-workshop
 
+# Image tag must match lab-versions.env (enforced by scripts/check-pins.sh).
+x-talos-version: &talos_version v1.13.11
+
 volumes:
   cp-state:
   worker-state:
 
 services:
   talos-cp:
-    image: ghcr.io/siderolabs/talos:v1.7.4
+    image: ghcr.io/siderolabs/talos:*talos_version
     hostname: talos-cp
     environment:
-        - PLATFORM=container
+      - PLATFORM=container
     read_only: true
     privileged: true
     security_opt:
@@ -31,10 +34,10 @@ services:
       - /system
       - /tmp
   talos-worker:
-    image: ghcr.io/siderolabs/talos:v1.7.4
+    image: ghcr.io/siderolabs/talos:*talos_version
     hostname: talos-worker
     environment:
-        - PLATFORM=container
+      - PLATFORM=container
     read_only: true
     privileged: true
     security_opt:
