@@ -2,9 +2,13 @@
 # .devcontainer/setup.sh
 # Setup script for Talos cluster testing environment
 
-set -e
+set -euo pipefail
 
 echo "[INFO] Setting up Talos cluster testing environment..."
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/lab-versions.env"
 
 # Determine architecture
 ARCH=$(uname -m)
@@ -24,9 +28,8 @@ esac
 echo "[INFO] Detected architecture: ${ARCH}"
 
 # Install talosctl
-echo "[INFO] Installing talosctl..."
-TALOS_VERSION="v1.7.4"
-curl -sL https://github.com/siderolabs/talos/releases/download/${TALOS_VERSION}/talosctl-linux-${ARCH} -o /tmp/talosctl
+echo "[INFO] Installing talosctl ${TALOS_VERSION}..."
+curl -sL "https://github.com/siderolabs/talos/releases/download/${TALOS_VERSION}/talosctl-linux-${ARCH}" -o /tmp/talosctl
 sudo install -m 755 /tmp/talosctl /usr/local/bin/talosctl
 rm /tmp/talosctl
 
@@ -40,4 +43,3 @@ docker compose version || echo "[WARN] docker compose not properly installed"
 echo "[INFO] Talos cluster testing environment is ready!"
 echo "[INFO] Use 'docker compose up -d' to start the Talos cluster."
 echo "[INFO] Use 'talosctl' to interact with the cluster."
-
