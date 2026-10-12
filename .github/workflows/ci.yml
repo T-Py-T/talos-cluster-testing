@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install lint tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck yamllint
+
+      - name: YAML lint
+        run: yamllint -c .yamllint.yml compose.yaml .github/workflows/ci.yml
+
+      - name: Shellcheck
+        run: shellcheck scripts/check-pins.sh .devcontainer/setup.sh
+
+      - name: Talos pin consistency
+        run: bash scripts/check-pins.sh
+
+      - name: Validate Compose file
+        run: docker compose -f compose.yaml config
