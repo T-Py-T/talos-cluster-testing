@@ -27,7 +27,7 @@
       }
     }
   },
-  "workspaceFolder": "/work/talos-cluster",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "remoteUser": "vscode"
 }
