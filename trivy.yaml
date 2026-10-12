@@ -1,0 +1,4 @@
+# Trivy config scan policy for the Talos container lab.
+scan:
+  skip-dirs:
+    - .git

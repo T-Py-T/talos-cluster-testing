@@ -9,7 +9,7 @@
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-      "version": "latest",
+      "version": "1.33",
       "helm": "latest",
       "minikube": "none"
     }
@@ -27,7 +27,7 @@
       }
     }
   },
-  "workspaceFolder": "/work/talos-cluster",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "remoteUser": "vscode"
 }

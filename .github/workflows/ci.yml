@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Install lint tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck yamllint
+
+      - name: YAML lint
+        run: yamllint -c .yamllint.yml compose.yaml .github/workflows/ci.yml .github/dependabot.yml
+
+      - name: Shellcheck
+        run: shellcheck scripts/check-pins.sh .devcontainer/setup.sh
+
+      - name: Talos and kubectl pin consistency
+        run: bash scripts/check-pins.sh
+
+      - name: Validate Compose file
+        run: docker compose -f compose.yaml config
+
+  trivy-security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Load lab version pins
+        run: |
+          # shellcheck source=/dev/null
+          source lab-versions.env
+          echo "TALOS_VERSION=${TALOS_VERSION}" >> "${GITHUB_ENV}"
+
+      - name: Trivy config scan
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2  # v0.28.0
+        with:
+          scan-type: config
+          scan-ref: .
+          trivy-config: trivy.yaml
+          exit-code: 1
+          severity: CRITICAL,HIGH
+
+      - name: Trivy image scan (pinned Talos containers)
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2  # v0.28.0
+        with:
+          scan-type: image
+          image-ref: "ghcr.io/siderolabs/talos:${{ env.TALOS_VERSION }}"
+          ignore-unfixed: true
+          exit-code: 1
+          severity: CRITICAL,HIGH
