@@ -73,7 +73,7 @@ Both nodes run in privileged mode with necessary capabilities for Kubernetes.
 
 ## Workspace Path
 
-This devcontainer uses `/work/talos-cluster` as the workspace folder to avoid conflicts with other projects.
+This devcontainer uses `/workspaces/${localWorkspaceFolderBasename}` so the editor opens on the same bind-mounted repository path Dev Containers uses by default.
 
 ## Container Name
 
