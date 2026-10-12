@@ -15,19 +15,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install lint tools
+      - name: Install lint and test tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq shellcheck yamllint
+          sudo apt-get install -y -qq shellcheck yamllint jq bats
+
+      - name: Install actionlint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash \
+            | bash -s -- 1.7.7
+          sudo mv actionlint /usr/local/bin/
+
+      - name: Actionlint
+        run: actionlint
 
       - name: YAML lint
-        run: yamllint -c .yamllint.yml compose.yaml .github/workflows/ci.yml
+        run: yamllint -c .yamllint.yml compose.yaml .github/workflows/ci.yml .github/dependabot.yml
 
       - name: Shellcheck
-        run: shellcheck scripts/check-pins.sh .devcontainer/setup.sh
+        run: shellcheck scripts/*.sh .devcontainer/setup.sh
 
       - name: Talos pin consistency
         run: bash scripts/check-pins.sh
+
+      - name: Lab manifest validation
+        run: bash scripts/validate-lab-manifests.sh
+
+      - name: Script tests (bats)
+        run: bash scripts/run-tests.sh
 
       - name: Validate Compose file
         run: docker compose -f compose.yaml config

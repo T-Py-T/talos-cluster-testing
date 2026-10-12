@@ -2,7 +2,7 @@
 # Ensure Talos image pins stay aligned with lab-versions.env.
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="${LAB_REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "${REPO_ROOT}"
 
 # shellcheck source=/dev/null
@@ -10,6 +10,11 @@ source "${REPO_ROOT}/lab-versions.env"
 
 if [[ -z "${TALOS_VERSION:-}" ]]; then
   echo "TALOS_VERSION is not set in lab-versions.env" >&2
+  exit 1
+fi
+
+if [[ ! "${TALOS_VERSION}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "TALOS_VERSION must look like vMAJOR.MINOR.PATCH (got: ${TALOS_VERSION})" >&2
   exit 1
 fi
 
@@ -27,12 +32,13 @@ if [[ "${image_count}" -ne 2 ]]; then
   exit 1
 fi
 
-if ! grep -qF 'TALOS_VERSION=' "${REPO_ROOT}/lab-versions.env"; then
-  echo "lab-versions.env missing TALOS_VERSION" >&2
+setup_sh="${REPO_ROOT}/.devcontainer/setup.sh"
+if ! grep -qF 'lab-versions.env' "${setup_sh}"; then
+  echo "setup.sh must source lab-versions.env" >&2
   exit 1
 fi
 
-if ! grep -qF "releases/download/\${TALOS_VERSION}/" "${REPO_ROOT}/.devcontainer/setup.sh"; then
+if ! grep -qF "releases/download/\${TALOS_VERSION}/" "${setup_sh}"; then
   echo "setup.sh does not install talosctl from lab-versions.env" >&2
   exit 1
 fi
